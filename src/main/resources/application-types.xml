@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="users" format="xml">
+      <types:example format="xml" element="users" location="examples/Inp.xml.txt"/>
+    </types:type>
+    <types:type name="Output" format="xml">
+      <types:example format="xml" element="users" location="examples/Inp.xml-1.txt"/>
+    </types:type>
+  </types:catalog>
+</types:mule>

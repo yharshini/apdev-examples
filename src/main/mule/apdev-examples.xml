@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	
+	<flow name="helloFlow" doc:id="22b007c7-4415-449d-8217-a8d9c3b4a165" >
+		<http:listener doc:name="GET/hello" doc:id="80813555-38c2-435a-bfe4-21ba29ae4f81" config-ref="HTTP_Listener_config" path="/hello" allowedMethods="GET">
+			<ee:repeatable-file-store-stream inMemorySize="1024" />
+			<http:response reasonPhrase="success" >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"name" : vars.firstName
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
+		<set-variable value="harshini" doc:name="Set Variable" doc:id="285d24b8-2e17-427a-9f99-fa765af04d25" variableName="var1"/>
+		<flow-ref doc:name="subFlow" doc:id="9dba9bb4-701a-464f-8b68-fe6e90b97fe8" name="subFlow"/>
+		<flow-ref doc:name="privateflow" doc:id="c0d705a3-8321-4741-b293-bb2060cccca0" name="Test"/>
+		<vm:publish-consume queueName="goodbye" doc:name="Publish consume" doc:id="29e8d9f3-c8b2-48ac-9d64-60fdbc532b1a" timeoutUnit="MINUTES" config-ref="VM_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b1305ac9-0996-4e89-89a1-359aa3b6757e" message="#[payload]"/>
+		<http:request method="GET" doc:name="Request" doc:id="4d3626b8-ce40-491c-a8a4-8ec2c5d38148" config-ref="HTTP_Request_configuration" path="/http_call_check" sendCorrelationId="AUTO">
+			<http:body ><![CDATA[Calling payload]]></http:body>
+		</http:request>
+		<logger level="INFO" doc:name="payload" doc:id="f931240c-5187-411e-b1a4-6c9c1e481a2e" message="#[payload]" />
+	</flow>
+	<flow name="Test" doc:id="639837bc-0496-4e75-892c-89a843a0cc94" >
+		<set-variable value="Test_SetVar" doc:name="Test_SetVar" doc:id="87335c19-f112-43c8-b048-1f1b0eae87d1" variableName="Test_SetVar"/>
+		<set-payload value="payload" doc:name="Set Payload" doc:id="1bef9c9d-3287-4876-8c5c-3883a50b8868" />
+	</flow>
+	<flow name="privateFlow" doc:id="8b5a384e-048b-40b3-8db0-d465ae24ddbb">
+		<http:request method="GET" doc:name="GET/goodbye" doc:id="8fe532d0-00b5-4a54-901c-e9167b8b1225" config-ref="HTTP_Request_configuration" path="/goodbye" responseTimeout="300000">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"fullName" : attributes.queryParams.fname
+}]]]></http:query-params>
+		</http:request>
+	</flow>
+	<sub-flow name="subFlow" doc:id="38238fae-37a7-485c-8a71-904a7ccfae7c" >
+		<set-variable value="#[message.attributes.queryParams.fname]" doc:name="firstName" doc:id="137ee937-67b0-4753-889d-cbe9624a33fc" variableName="firstName" />
+		<set-payload value="Hello" doc:name="Hello" doc:id="e1dba61e-13bb-4b60-ac75-c3639c29579a" />
+	</sub-flow>
+	<flow name="goodByeFlow" doc:id="0e373964-4a40-428a-bb1b-5673f7e9c8a3" >
+		<vm:listener queueName="goodbye" doc:name="VM goodbye" doc:id="949614c2-946f-4e8f-9ae0-894e214a45be" config-ref="VM_Config"/>
+		<set-variable value="VM Listner-Ammulu" doc:name="Set Variable" doc:id="c0ee106f-0be6-4163-95d1-80ee9307af8f" variableName="var2"/>
+		<set-payload value="#[upper('Goodbye') ++ ' '++ (attributes.queryParams.fullName default 'Maxine')]" doc:name="Goodbye" doc:id="b2a9f170-93fa-456d-9d90-ab91ec9e96b2" />
+		<logger level="INFO" doc:name="fullName" doc:id="bb79b6fd-0b0c-434a-a57a-e1aeb4082a6b" message="#[attributes.queryParams.fullName]"/>
+	</flow>
+	<flow name="HTTP_Call_TEST" doc:id="87d64198-c2a7-43b2-abcb-ff37e4a151f6" >
+		<http:listener doc:name="Listener" doc:id="bed58b31-844d-4827-8bb7-a6957c7b1a72" config-ref="HTTP_Listener_config" path="/http_call_check"/>
+		<set-variable value="Test_SetVar_HTTP_Check" doc:name="Copy_of_Test_SetVar" doc:id="b7eb33fe-1b32-4d4d-beb1-6a19aba0eb4e" variableName="Test_SetVar" />
+		<set-payload value="payload_HTTP_Check" doc:name="Copy_of_Set Payload" doc:id="aabb9f78-bf4d-4005-85e9-abd4b2964ebc" />
+	</flow>
+</mule>
